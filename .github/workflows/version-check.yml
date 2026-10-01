@@ -1,0 +1,41 @@
+name: version-check
+
+# Same checks as sve-check, on the SVE2 runner only, across openvino.genai releases.
+# 2026.0.0 is the last release before openvinotoolkit/openvino.genai#2707 added the HAVE_SVE condition.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check (${{ matrix.version }})
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["2026.0.0", "2026.1.0", "2026.4.1"]
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: CPU info
+        run: |
+          lscpu | grep -E "Architecture|Model name|Flags"
+          echo "SVE flags in /proc/cpuinfo:"
+          grep -o -w -E 'sve2?' /proc/cpuinfo | sort | uniq -c || echo "none"
+
+      - name: Install OpenVINO GenAI ${{ matrix.version }}
+        run: pip install openvino==${{ matrix.version }} openvino-genai==${{ matrix.version }}.0 openvino-tokenizers==${{ matrix.version }}.0 huggingface_hub
+
+      - name: Download model
+        run: hf download OpenVINO/Qwen3-0.6B-int4-ov --local-dir model
+
+      - name: Run checks
+        run: python check.py model

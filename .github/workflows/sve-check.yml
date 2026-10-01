@@ -1,0 +1,40 @@
+name: sve-check
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04-arm, ubuntu-24.04]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: CPU info
+        run: |
+          uname -m
+          lscpu
+          echo "SVE flags in /proc/cpuinfo:"
+          grep -o -w -E 'sve2?' /proc/cpuinfo | sort | uniq -c || echo "none"
+
+      - name: Install OpenVINO GenAI 2026.4.0
+        run: pip install openvino==2026.4.0 openvino-genai==2026.4.0.0 openvino-tokenizers==2026.4.0.0 huggingface_hub
+
+      - name: Download model
+        run: hf download OpenVINO/Qwen3-0.6B-int4-ov --local-dir model
+
+      - name: Run checks
+        run: python check.py model

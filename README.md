@@ -14,7 +14,7 @@ OpenVINO core selects its SVE PagedAttention kernel at runtime, so this repo run
 
 Results are in the job summary of each run in the Actions tab.
 
-`version-check.yml` runs the same checks on the SVE2 runner with openvino.genai 2026.0.0 (before the `HAVE_SVE` condition was added), 2026.1.0 (first release with it) and 2026.4.1. It is started manually from the Actions tab.
+`version-check.yml` runs the same checks on the SVE2 runner for every openvino.genai release from 2026.0.0 (before the `HAVE_SVE` condition was added) to 2026.4.1. It is started manually from the Actions tab.
 
 Run locally:
 

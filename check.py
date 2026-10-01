@@ -50,8 +50,8 @@ def continuous_batching_case(model_dir):
         return ov_genai.ContinuousBatchingPipeline(model_dir, ov_genai.SchedulerConfig(), "CPU")
 
     def generate(pipe):
-        result = pipe.generate([PROMPT], [generation_config()])[0]
-        return pipe.get_tokenizer().decode(result.m_generation_ids[0])
+        # String prompts return GenerationResult, whose m_generation_ids are already decoded
+        return pipe.generate([PROMPT], [generation_config()])[0].m_generation_ids[0]
 
     return construct, generate
 
